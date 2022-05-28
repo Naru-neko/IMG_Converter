@@ -1,9 +1,11 @@
-from tkinter import Scrollbar
+# config: utf-8
+# python 3.10.1 64bit (not conda)
+# pyinstaller main.py --onefile --name img_converter --icon data\image\icon_.ico --noconsole --clean
+
 from PIL import Image, ImageTk
 import PySimpleGUI as sg
 import io
 import os
-from numpy import pad
 
 
 
@@ -77,25 +79,31 @@ output_frame = sg.Frame('',
                         )
 
 
+input_form = [
+                [sg.Text('  元画像  '), 
+                sg.InputText(key='file1',
+                            enable_events=True,
+                            default_text='画像のパスを入力'),
+                sg.FileBrowse(' 参照 ')],
+
+                [sg.Text('  保存先  '),
+                sg.InputText(key='folder1',
+                            enable_events=True,
+                            default_text='保存先フォルダのパスを入力'),
+                sg.FolderBrowse(' 参照 ')],
+
+                [sg.Text('  保存名  '),
+                sg.InputText(key='save_name',
+                            default_text='保存するファイル名を入力')]
+             ]
+
+
+
 layout = [  
             [sg.Text('''  1. 元画像を選択     2. 保存先を選択     3. 保存ファイル名を入力     4. 拡張子を選択     5. 変換開始ボタン押下  ''')],
-            
-            [sg.Text('  元画像  '), 
-             sg.InputText(key='file1',
-                          enable_events=True,
-                          default_text='画像のパスを入力'),
-             sg.FileBrowse(' 参照 ')],
 
-            [sg.Text('  保存先  '),
-             sg.InputText(key='folder1',
-                          enable_events=True,
-                          default_text='保存先フォルダのパスを入力'),
-             sg.FolderBrowse(' 参照 ')],
-
-            [sg.Text('  保存名  '),
-             sg.InputText(key='save_name',
-                          default_text='保存するファイル名を入力')],
-
+            [sg.Column(input_form), sg.Image(data=get_img(path=r'data\image\logo_.png', maxsize=(90,90), first=True), pad=((245,0),(0,0)), background_color='#002234')],
+    
             [img_zone, convs],
 
             [sg.Button('  変換開始  ')],
@@ -113,6 +121,7 @@ sg.theme('DarkBlue') #PySimpleGUI テーマ選択
 window = sg.Window('画像変換君1号 － 試作型',
                     layout,
                     size=(835,690),
+                    background_color='#002234'
                     #resizable=True
                   )
 
