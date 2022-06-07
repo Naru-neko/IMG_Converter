@@ -1,14 +1,13 @@
 # config: utf-8
-# python 3.10.1 64bit (not conda)
 # pyinstaller main.py --onefile --name img_converter --icon data\image\icon_.ico --noconsole --clean
 
 
 import base64
-from turtle import color
 from PIL import Image, ImageTk
 import PySimpleGUI as sg
 import io
 import os
+import webbrowser
 
 
 
@@ -28,21 +27,24 @@ def get_img(path=r'data\image\EMPTY.png', maxsize=(640,360), first=False):
 
 
 #==========================================MAIN================================================
-#define Variables
+# define Variables
 
-soft_title = '画像変換君1号 試作型'
+soft_title = '画像変換君1号 試作型（仮）'
 
-extension = '.png' #file extension. Default -> PNG
+current_extension = ''
+extension = '.png' # file extension. Default -> PNG
 img_path = 'example.png'
 dir_path = 'none'
 file_name = 'example'
 
-with open('data\image\icon.png', mode='rb') as f:
+with open('data\image\icon.png', mode='rb') as f: # タイトルバーアイコン画像をbase64エンコード
     icon_base64 = base64.b64encode(f.read())
 
 
 
+
 #------------------------------------ define layout ----------------------------------------
+# 画像サムネイル表示欄レイアウト
 img_zone = sg.Frame('', 
                     [
                         [sg.Image(data=get_img(first=True), 
@@ -52,9 +54,12 @@ img_zone = sg.Frame('',
                     )
 
 
+# 拡張子選択欄レイアウト
 convs = sg.Frame(' 変換拡張子 ',
                     [
-                    [sg.Text('選択中：'), sg.Text(extension, key='ext',background_color='black')],
+                    [sg.Text('選択中：'), sg.Text(extension, 
+                                                  key='ext',
+                                                  background_color='black')],
                     [sg.Button('BMP'), sg.Button('DIB')],
                     [sg.Button('EPS'), sg.Button('GIF')],
                     [sg.Button('ICO'), sg.Button('IM')],
@@ -68,6 +73,7 @@ convs = sg.Frame(' 変換拡張子 ',
                 )
 
 
+# 画面下部出力欄レイアウト
 output_frame = sg.Frame('',
                         [
                         [sg.ProgressBar(100,
@@ -87,6 +93,7 @@ output_frame = sg.Frame('',
                         )
 
 
+# 各種入力欄レイアウト
 input_form = [
                 [sg.Text('  元画像  '), 
                 sg.InputText(key='file1',
@@ -106,27 +113,27 @@ input_form = [
              ]
 
 
+# メニューバーレイアウト
 menu_bar = [sg.MenuBar([['ファイル',
-                                    ['新規ファイル',
+                                    ['新規ファイル(機能はない)',
                                      '---',
                                      '終了']],
                         ['ツール', 
-                                  ['未実装',
+                                  ['なんもないよ',
                                    '---',
-                                   '未実装']],
+                                   'なんもないよ']],
                         ['設定', 
-                                ['未実装',
+                                ['なんもないね',
                                  '---',
-                                 '未実装']],
+                                 'なんもないね']],
                         ['ヘルプ', 
-                                  ['未実装',
+                                  ['あとでなんかつける',
                                    '---',
-                                   '未実装']]
+                                   '配布元Githubページへ']]
                         ],key='menubar')]
 
 
-
-
+# レイアウト総括
 layout = [  [menu_bar],
 
             [sg.Text('''  1. 元画像を選択     2. 保存先を選択     3. 保存ファイル名を入力     4. 拡張子を選択     5. 変換開始ボタン押下  ''')],
@@ -148,7 +155,7 @@ layout = [  [menu_bar],
 
 #--------------------------------- Generate window ---------------------------------------
 
-sg.theme('DarkBlue') #PySimpleGUI テーマ選択
+sg.theme('DarkBlue') # PySimpleGUI テーマ選択
 
 
 window = sg.Window(soft_title,
@@ -160,7 +167,7 @@ window = sg.Window(soft_title,
                   ).Finalize()
 
 print(soft_title + 'を起動しました')
-
+print('------------------------------------------------------------------------------------------\n')
 
 
 #------------------------------------- Main roop ------------------------------------------
@@ -170,14 +177,23 @@ while True:
     if event == sg.WIN_CLOSED:
         break
     
+    # メニューバー挙動
     elif values['menubar'] == '終了':
-        exit_pop = sg.popup_ok_cancel(soft_title + 'を終了してよろしいですか？')
+        exit_pop = sg.popup_ok_cancel(soft_title + 'を終了してよろしいですか？', title='確認')
         if exit_pop == 'OK':
             break
         else:
             continue
+    elif values['menubar'] == '配布元Githubページへ':
+        exit_pop = sg.popup_ok_cancel('ブラウザでページを表示します', title='確認')
+        if exit_pop == 'OK':
+            url = 'https://github.com/N4RU53/IMG_Converter'
+            webbrowser.open(url)
+        else:
+            continue
 
 
+    # 元画像パス欄入力時
     elif event == 'file1':
         img_path = values['file1']
         try:
@@ -185,6 +201,7 @@ while True:
             dir_path = os.path.dirname(img_path)
             window['folder1'].update(dir_path)
             window['save_name'].update(os.path.basename(img_path).split('.', 1)[0] + '_conv')
+            current_extension = '.' + os.path.basename(img_path).split('.', 1)[1]
             print('画像選択： ', img_path)
         except:
             print('ERROR：' + img_path + 'を読み込めませんでした')
@@ -192,25 +209,31 @@ while True:
             img_path = 'example.png'
 
 
+    # 保存先パス欄入力時
     elif event == 'folder1':
         dir_path = values['folder1']
         print('保存先選択： ', dir_path)
     
 
+    # 変換開始ボタン押下
     elif event == '  変換開始  ':
-        saves = dir_path + '/' + values['save_name'] + extension
-        ans = sg.popup_ok_cancel('現在の設定で変換しますか？\n\n' + img_path + '\n\nから\n\n' + saves + '\n')
-        if ans == 'OK':
-            try:
-                img = Image.open(img_path).convert('RGB')
-                img.save(saves)
-                print(saves + 'を保存しました')
-            except:
-                print('ERROR：' + saves + 'を保存できませんでした')
+        if current_extension != extension:
+            saves = dir_path + '/' + values['save_name'] + extension
+            ans = sg.popup_ok_cancel('現在の設定で変換しますか？\n\n' + img_path + '\n\nから\n\n' + saves + '\n', title='確認')
+            if ans == 'OK':
+                try:
+                    img = Image.open(img_path).convert('RGB')
+                    img.save(saves)
+                    print(saves + 'を保存しました')
+                except:
+                    print('ERROR：' + saves + 'を保存できませんでした')
+            else:
+                continue
         else:
-            continue
+            print('ERROR：変換前の拡張子と選択中の拡張子が同じです')
 
 
+    # 拡張子選択ボタン各種押下
     elif event == 'BMP':
         extension = '.bmp'
         print('変換対象拡張子：BMPを選択')
@@ -260,6 +283,7 @@ while True:
         extension = '.webp'
         print('変換対象拡張子：WebPを選択')
     
+    # 選択された拡張子に表示を更新
     window['ext'].update(extension)
     
 
