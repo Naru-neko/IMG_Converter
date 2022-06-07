@@ -2,6 +2,9 @@
 # python 3.10.1 64bit (not conda)
 # pyinstaller main.py --onefile --name img_converter --icon data\image\icon_.ico --noconsole --clean
 
+
+import base64
+from turtle import color
 from PIL import Image, ImageTk
 import PySimpleGUI as sg
 import io
@@ -25,16 +28,21 @@ def get_img(path=r'data\image\EMPTY.png', maxsize=(640,360), first=False):
 
 
 #==========================================MAIN================================================
-
 #define Variables
+
+soft_title = '画像変換君1号 試作型'
 
 extension = '.png' #file extension. Default -> PNG
 img_path = 'example.png'
 dir_path = 'none'
 file_name = 'example'
 
+with open('data\image\icon.png', mode='rb') as f:
+    icon_base64 = base64.b64encode(f.read())
 
-# define layout -------------------------------------------------------------------------------
+
+
+#------------------------------------ define layout ----------------------------------------
 img_zone = sg.Frame('', 
                     [
                         [sg.Image(data=get_img(first=True), 
@@ -98,11 +106,37 @@ input_form = [
              ]
 
 
+menu_bar = [sg.MenuBar([['ファイル',
+                                    ['新規ファイル',
+                                     '---',
+                                     '終了']],
+                        ['ツール', 
+                                  ['未実装',
+                                   '---',
+                                   '未実装']],
+                        ['設定', 
+                                ['未実装',
+                                 '---',
+                                 '未実装']],
+                        ['ヘルプ', 
+                                  ['未実装',
+                                   '---',
+                                   '未実装']]
+                        ],key='menubar')]
 
-layout = [  
+
+
+
+layout = [  [menu_bar],
+
             [sg.Text('''  1. 元画像を選択     2. 保存先を選択     3. 保存ファイル名を入力     4. 拡張子を選択     5. 変換開始ボタン押下  ''')],
 
-            [sg.Column(input_form), sg.Image(data=get_img(path=r'data\image\logo_.png', maxsize=(90,90), first=True), pad=((245,0),(0,0)), background_color='#002234')],
+            [sg.Column(input_form),
+             sg.Image(data=get_img(path=r'data\image\logo_.png',
+                                   maxsize=(90,90),
+                                   first=True),
+                      pad=((245,0),(0,0)),
+                      background_color='#002234')],
     
             [img_zone, convs],
 
@@ -111,26 +145,37 @@ layout = [
             [output_frame]
         ]
 
-#-----------------------------------------------------------------------------------------------
 
+#--------------------------------- Generate window ---------------------------------------
 
 sg.theme('DarkBlue') #PySimpleGUI テーマ選択
 
 
+window = sg.Window(soft_title,
+                   layout,
+                   size=(835,690),
+                   background_color='#002234',
+                   #resizable=True,
+                   icon=icon_base64
+                  ).Finalize()
 
-window = sg.Window('画像変換君1号 － 試作型',
-                    layout,
-                    size=(835,690),
-                    background_color='#002234'
-                    #resizable=True
-                  )
+print(soft_title + 'を起動しました')
 
 
+
+#------------------------------------- Main roop ------------------------------------------
 while True:
     event, values = window.read()
 
     if event == sg.WIN_CLOSED:
         break
+    
+    elif values['menubar'] == '終了':
+        exit_pop = sg.popup_ok_cancel(soft_title + 'を終了してよろしいですか？')
+        if exit_pop == 'OK':
+            break
+        else:
+            continue
 
 
     elif event == 'file1':
@@ -164,7 +209,7 @@ while True:
                 print('ERROR：' + saves + 'を保存できませんでした')
         else:
             continue
-    
+
 
     elif event == 'BMP':
         extension = '.bmp'
