@@ -1,5 +1,20 @@
 # config: utf-8
-# pyinstaller main.py --onefile --name img_converter --icon data\image\icon_.ico --noconsole --clean
+
+''' 
+[pyinstaller install command]
+pyinstaller main.py --onefile --name img_converter --icon data\image\icon_.ico --noconsole --clean
+
+'''
+
+'''
+画像変換君1号 試作型
+
+Copyright (c) 2022 N4RU53
+Released under the MIT license
+https://opensource.org/licenses/mit-license.php
+
+'''
+
 
 
 import base64
