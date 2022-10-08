@@ -206,7 +206,7 @@ while True:
             webbrowser.open(url)
         else:
             continue
-
+        
 
     # 元画像パス欄入力時
     elif event == 'file1':
